@@ -267,6 +267,11 @@ function evaluateCondition(row, clause) {
   const rowValue = parseValue(row[field]);
   let conditionValue = parseValue(value);
 
+  if (clause.operator === "LIKE") {
+    // Transform SQL LIKE pattern to JavaScript RegExp pattern
+    const regexPattern = "^" + clause.value.replace(/%/g, ".*") + "$";
+    return new RegExp(regexPattern, "i").test(row[clause.field]);
+  }
   // console.log("EVALUATING", rowValue, operator, conditionValue, typeof (rowValue), typeof (conditionValue));
 
   switch (operator) {
