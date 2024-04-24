@@ -1,13 +1,23 @@
 function parseQuery(query) {
   query = query.trim();
-  let selectPart, fromPart;
-  const whereSplit = query.split(/\sWHERE\s/i);
-  query = whereSplit[0]; // Everything before WHERE clause
+  const groupBySplit = query.split(/\sGROUP BY\s/i);
+  const queryWithoutGroupBy = groupBySplit[0];
+
+  let groupByFields =
+    groupBySplit.length > 1
+      ? groupBySplit[1]
+          .trim()
+          .split(",")
+          .map((field) => field.trim())
+      : null;
+
+  const whereSplit = queryWithoutGroupBy.split(/\sWHERE\s/i);
+  const queryWithoutWhere = whereSplit[0];
 
   const whereClause = whereSplit.length > 1 ? whereSplit[1].trim() : null;
 
-  const joinSplit = query.split(/\s(INNER|LEFT|RIGHT) JOIN\s/i);
-  selectPart = joinSplit[0].trim(); // Everything before JOIN clause
+  const joinSplit = queryWithoutWhere.split(/\s(INNER|LEFT|RIGHT) JOIN\s/i);
+  const selectPart = joinSplit[0].trim();
   const selectRegex = /^SELECT\s(.+?)\sFROM\s(.+)/i;
   const selectMatch = selectPart.match(selectRegex);
   if (!selectMatch) {
@@ -15,13 +25,19 @@ function parseQuery(query) {
   }
 
   const [, fields, table] = selectMatch;
-  const { joinType, joinTable, joinCondition } = parseJoinClause(query);
+  const { joinType, joinTable, joinCondition } =
+    parseJoinClause(queryWithoutWhere);
 
   // Parse the WHERE part if it exists
   let whereClauses = [];
   if (whereClause) {
     whereClauses = parseWhereClause(whereClause);
   }
+
+  const aggregateFunctionRegex =
+    /(\bCOUNT\b|\bAVG\b|\bSUM\b|\bMIN\b|\bMAX\b)\s*\(\s*(\*|\w+)\s*\)/i;
+  const hasAggregateWithoutGroupBy =
+    aggregateFunctionRegex.test(query) && !groupByFields;
 
   return {
     fields: fields.split(",").map((field) => field.trim()),
@@ -30,6 +46,8 @@ function parseQuery(query) {
     joinTable,
     joinType,
     joinCondition,
+    groupByFields,
+    hasAggregateWithoutGroupBy,
   };
 }
 
