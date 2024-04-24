@@ -5,7 +5,7 @@ const executeSELECTQuery = require("../../src/index");
 test("Read CSV File", async () => {
   const data = await readCSV("./student.csv");
   expect(data.length).toBeGreaterThan(0);
-  expect(data.length).toBe(4);
+  expect(data.length).toBe(5);
   expect(data[0].name).toBe("John");
   expect(data[0].age).toBe("30"); //ignore the string type here, we will fix this later
 });
@@ -46,7 +46,7 @@ test("Execute SQL Query with Greater Than", async () => {
 test("Execute SQL Query with Not Equal to", async () => {
   const queryWithGT = "SELECT name FROM student WHERE age != 25";
   const result = await executeSELECTQuery(queryWithGT);
-  expect(result.length).toEqual(3);
+  expect(result.length).toEqual(4);
   expect(result[0]).toHaveProperty("name");
 });
 
@@ -62,7 +62,7 @@ test("Execute SQL Query with INNER JOIN", async () => {
       { 'student.name': 'Bob', 'enrollment.course': 'Mathematics' }
     ]
     */
-  expect(result.length).toEqual(4);
+  expect(result.length).toEqual(6);
   // toHaveProperty is not working here due to dot in the property name
   expect(result[0]).toEqual(
     expect.objectContaining({
