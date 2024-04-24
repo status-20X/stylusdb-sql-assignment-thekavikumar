@@ -158,7 +158,6 @@ jobs:
           command: npm run test:16
           timeout: 10
           max-score: 10
-          min-score: 10
       - name: Step-17 Test
         id: step-17-test
         uses: education/autograding-command-grader@v1
